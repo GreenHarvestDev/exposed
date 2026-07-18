@@ -10,20 +10,11 @@ the data brokers holding it.
 It only ever looks *you* up. No targets, no accounts, no keys, no data leaves your
 machine except the lookups themselves.
 
-```
-  [HIGH  ] jane@example.com found in infostealer data (2 infection record(s))
-           A device tied to this email was infected by info-stealing malware...
-           → Rotate those passwords, enable 2FA, and run a malware scan.
+<p align="center">
+  <img src="assets/demo.png" alt="exposed scan output" width="620">
+</p>
 
-  [MEDIUM] 'janepublic' found on 14 site(s)
-           Accounts under this username reveal your interests and often real name...
-           → Review each: delete unused accounts, lock down profiles.
-
-  [CLEAR ] jane@example.com not seen in infostealer logs
-
-  23 findings   high=1  medium=4  low=1  info=0  clear=17
-  25 data-broker opt-out targets ready
-```
+<p align="center"><sub>Example scan of a fictional identity — real output is color-coded by severity.</sub></p>
 
 ## What it checks
 

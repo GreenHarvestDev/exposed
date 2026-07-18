@@ -7,41 +7,26 @@ from pathlib import Path
 
 from .scan import load_json, run_scan
 
-SEV_COLORS = {
-    "high": "\033[91m", "medium": "\033[93m", "low": "\033[96m",
-    "info": "\033[90m", "clear": "\033[92m",
-}
-RESET = "\033[0m"
 
-
-def _c(text, sev, use_color):
-    if not use_color:
-        return text
-    return f"{SEV_COLORS.get(sev, '')}{text}{RESET}"
-
-
-def print_report(result, use_color=True):
+def _plain_report(result):
+    """Fallback renderer if `rich` isn't available."""
     stats = result["stats"]
     ident = result["identity_summary"]
-    print()
-    print(f"  Scanned: {ident['name']}  |  {', '.join(ident['emails']) or '(no emails)'}")
-    if ident["location"]:
-        print(f"  Location: {ident['location']}")
-    print()
     order = ["high", "medium", "low", "info", "clear"]
+    print()
+    print(f"  exposed — {ident['name']}  |  {', '.join(ident['emails']) or '(no emails)'}")
+    if ident["location"]:
+        print(f"  location: {ident['location']}")
+    print()
     for f in result["findings"]:
-        tag = f["severity"].upper().ljust(6)
-        print(_c(f"  [{tag}] {f['title']}", f["severity"], use_color))
+        print(f"  [{f['severity'].upper():6}] {f['title']}")
         if f.get("detail"):
             print(f"          {f['detail']}")
         if f.get("action"):
-            print(f"          → {f['action']}")
+            print(f"          -> {f['action']}")
         print()
-    summary = "  ".join(
-        _c(f"{s}={stats.get(s, 0)}", s, use_color) for s in order
-    )
-    print(f"  {len(result['findings'])} findings   {summary}")
-    print(f"  {len(result['brokers'])} data-broker opt-out targets ready")
+    print("  " + "  ".join(f"{s}={stats.get(s, 0)}" for s in order))
+    print(f"  {len(result['brokers'])} data-broker opt-out links ready")
     print(f"  {len(result['dorks'])} search dorks generated")
 
 
@@ -72,7 +57,6 @@ def main(argv=None):
         print(f"error: could not parse {identity_path} as JSON", file=sys.stderr)
         return 2
 
-    use_color = not args.no_color and sys.stdout.isatty()
     result = run_scan(
         identity,
         do_sherlock=not args.no_sherlock,
@@ -83,9 +67,17 @@ def main(argv=None):
 
     if args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
-    else:
-        print_report(result, use_color=use_color)
-        print(f"\n  Full report saved → {args.out}")
+        return 0
+
+    try:
+        from rich.console import Console
+        from .render import render
+        console = Console(no_color=args.no_color)
+        render(result, console)
+    except ImportError:
+        _plain_report(result)
+
+    print(f"\n  Full report saved -> {args.out}")
     return 0
 
 
