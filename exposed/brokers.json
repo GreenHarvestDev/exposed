@@ -1,0 +1,255 @@
+{
+  "_comment": "Curated US data-broker / people-search opt-out registry. Tokens in URLs: {name}, {name_slug}, {first}, {last}, {city}, {state}, {email}, {phone}. Difficulty: easy=web form, medium=email/verify, hard=ID/notarized. Order roughly by exposure impact.",
+  "brokers": [
+    {
+      "id": "truepeoplesearch",
+      "name": "TruePeopleSearch",
+      "category": "people-search",
+      "impact": "high",
+      "difficulty": "easy",
+      "search_url": "https://www.truepeoplesearch.com/results?name={first}%20{last}&citystatezip={city}%2C%20{state}",
+      "optout_url": "https://www.truepeoplesearch.com/removal",
+      "notes": "One of the most exposed free lookups. Find your record, copy its URL, submit on removal page. No account."
+    },
+    {
+      "id": "fastpeoplesearch",
+      "name": "FastPeopleSearch",
+      "category": "people-search",
+      "impact": "high",
+      "difficulty": "easy",
+      "search_url": "https://www.fastpeoplesearch.com/name/{first}-{last}_{city}-{state}",
+      "optout_url": "https://www.fastpeoplesearch.com/removal",
+      "notes": "Shows full address history + relatives + phones for free. Locate record, submit URL on removal page."
+    },
+    {
+      "id": "spokeo",
+      "name": "Spokeo",
+      "category": "people-search",
+      "impact": "high",
+      "difficulty": "easy",
+      "search_url": "https://www.spokeo.com/{name_slug}",
+      "optout_url": "https://www.spokeo.com/optout",
+      "notes": "Search name, copy the profile URL, paste into opt-out + email. Confirmation email required."
+    },
+    {
+      "id": "whitepages",
+      "name": "Whitepages",
+      "category": "people-search",
+      "impact": "high",
+      "difficulty": "medium",
+      "search_url": "https://www.whitepages.com/name/{first}-{last}/{city}-{state}",
+      "optout_url": "https://www.whitepages.com/suppression-requests",
+      "notes": "Requires phone-call verification code to complete suppression. Widely scraped source."
+    },
+    {
+      "id": "beenverified",
+      "name": "BeenVerified",
+      "category": "background-check",
+      "impact": "high",
+      "difficulty": "easy",
+      "search_url": "https://www.beenverified.com/app/optout/search",
+      "optout_url": "https://www.beenverified.com/app/optout/search",
+      "notes": "Search your name on the opt-out page directly, select record, verify by email."
+    },
+    {
+      "id": "radaris",
+      "name": "Radaris",
+      "category": "people-search",
+      "impact": "high",
+      "difficulty": "medium",
+      "search_url": "https://radaris.com/p/{first}/{last}/",
+      "optout_url": "https://radaris.com/control/privacy",
+      "notes": "Find profile, click 'Control Information', verify by phone/email. Known to repopulate — recheck quarterly."
+    },
+    {
+      "id": "mylife",
+      "name": "MyLife",
+      "category": "people-search",
+      "impact": "high",
+      "difficulty": "hard",
+      "search_url": "https://www.mylife.com/{name_slug}",
+      "optout_url": "https://www.mylife.com/ccpa/index.pubview",
+      "notes": "Publishes 'reputation scores'. Opt-out via CCPA form; may require calling 888-704-1900. Persistent."
+    },
+    {
+      "id": "intelius",
+      "name": "Intelius",
+      "category": "background-check",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://www.intelius.com/opt-out/",
+      "optout_url": "https://www.intelius.com/opt-out/",
+      "notes": "PeopleConnect network (also covers TruthFinder/Instant Checkmate). Email verification."
+    },
+    {
+      "id": "truthfinder",
+      "name": "TruthFinder",
+      "category": "background-check",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://www.truthfinder.com/opt-out/",
+      "optout_url": "https://www.truthfinder.com/opt-out/",
+      "notes": "PeopleConnect. Find record, confirm by email."
+    },
+    {
+      "id": "instantcheckmate",
+      "name": "Instant Checkmate",
+      "category": "background-check",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://www.instantcheckmate.com/opt-out/",
+      "optout_url": "https://www.instantcheckmate.com/opt-out/",
+      "notes": "PeopleConnect. Email confirmation."
+    },
+    {
+      "id": "peoplefinders",
+      "name": "PeopleFinders",
+      "category": "people-search",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://www.peoplefinders.com/people/{first}-{last}",
+      "optout_url": "https://www.peoplefinders.com/opt-out",
+      "notes": "Locate record, submit removal, confirm by email."
+    },
+    {
+      "id": "peekyou",
+      "name": "PeekYou",
+      "category": "data-aggregator",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://www.peekyou.com/{first}_{last}",
+      "optout_url": "https://www.peekyou.com/about/contact/optout/",
+      "notes": "Aggregates social profiles + usernames. Needs the URL of your listing."
+    },
+    {
+      "id": "thatsthem",
+      "name": "That's Them",
+      "category": "people-search",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://thatsthem.com/name/{first}-{last}/{city}-{state}",
+      "optout_url": "https://thatsthem.com/optout",
+      "notes": "Exposes email + phone + IP linkage. Simple form."
+    },
+    {
+      "id": "nuwber",
+      "name": "Nuwber",
+      "category": "people-search",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://nuwber.com/search?name={first}+{last}&state={state}",
+      "optout_url": "https://nuwber.com/removal/link",
+      "notes": "Find record, paste its URL, verify by email."
+    },
+    {
+      "id": "usphonebook",
+      "name": "USPhoneBook",
+      "category": "phone-lookup",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://www.usphonebook.com/{first}-{last}",
+      "optout_url": "https://www.usphonebook.com/opt-out",
+      "notes": "Reverse-phone exposure. Locate record, submit, email confirm."
+    },
+    {
+      "id": "advancedbackgroundchecks",
+      "name": "Advanced Background Checks",
+      "category": "background-check",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://www.advancedbackgroundchecks.com/{first}-{last}",
+      "optout_url": "https://www.advancedbackgroundchecks.com/removal",
+      "notes": "Free full report. Locate record, submit URL, email confirm."
+    },
+    {
+      "id": "searchpeoplefree",
+      "name": "SearchPeopleFree",
+      "category": "people-search",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://www.searchpeoplefree.com/find/{first}-{last}/{state}",
+      "optout_url": "https://www.searchpeoplefree.com/opt-out",
+      "notes": "Simple removal form + email confirm."
+    },
+    {
+      "id": "clustrmaps",
+      "name": "ClustrMaps",
+      "category": "address-directory",
+      "impact": "medium",
+      "difficulty": "easy",
+      "search_url": "https://clustrmaps.com/persons/{first}-{last}",
+      "optout_url": "https://clustrmaps.com/bl/opt-out",
+      "notes": "Maps your address history publicly. Enter address on opt-out page."
+    },
+    {
+      "id": "ussearch",
+      "name": "US Search",
+      "category": "background-check",
+      "impact": "low",
+      "difficulty": "easy",
+      "search_url": "https://www.ussearch.com/opt-out/",
+      "optout_url": "https://www.ussearch.com/opt-out/",
+      "notes": "PeopleConnect network. Email confirm."
+    },
+    {
+      "id": "411",
+      "name": "411.com",
+      "category": "people-search",
+      "impact": "low",
+      "difficulty": "medium",
+      "search_url": "https://www.411.com/name/{first}-{last}/{state}",
+      "optout_url": "https://www.411.com/privacy/manage",
+      "notes": "Whitepages-owned. Same phone-verify flow as Whitepages."
+    },
+    {
+      "id": "acxiom",
+      "name": "Acxiom",
+      "category": "data-broker",
+      "impact": "high",
+      "difficulty": "medium",
+      "search_url": "https://isapps.acxiom.com/optout/optout.aspx",
+      "optout_url": "https://isapps.acxiom.com/optout/optout.aspx",
+      "notes": "Wholesale marketing-data broker (feeds many others). Opt-out form suppresses future selling."
+    },
+    {
+      "id": "lexisnexis",
+      "name": "LexisNexis",
+      "category": "data-broker",
+      "impact": "high",
+      "difficulty": "hard",
+      "search_url": "https://optout.lexisnexis.com/",
+      "optout_url": "https://optout.lexisnexis.com/",
+      "notes": "Feeds background/insurance/law-enforcement. Suppression needs ID; strongest privacy win of the list."
+    },
+    {
+      "id": "epsilon",
+      "name": "Epsilon",
+      "category": "data-broker",
+      "impact": "medium",
+      "difficulty": "medium",
+      "search_url": "https://legal.epsilon.com/dnc/",
+      "optout_url": "https://legal.epsilon.com/dnc/",
+      "notes": "Major marketing-data broker. Email optout@epsilon.com or use the DNC form."
+    },
+    {
+      "id": "oracle-optout",
+      "name": "Oracle Data Cloud",
+      "category": "data-broker",
+      "impact": "low",
+      "difficulty": "easy",
+      "search_url": "https://datacloudoptout.oracle.com/#optout",
+      "optout_url": "https://datacloudoptout.oracle.com/#optout",
+      "notes": "Ad-targeting profile opt-out (BlueKai lineage)."
+    },
+    {
+      "id": "haveibeenpwned",
+      "name": "Have I Been Pwned",
+      "category": "breach-directory",
+      "impact": "info",
+      "difficulty": "easy",
+      "search_url": "https://haveibeenpwned.com/",
+      "optout_url": "https://haveibeenpwned.com/",
+      "notes": "Not a removal — check which breaches leaked your email, then rotate those passwords + enable 2FA. Auto-checked below via HudsonRock stealer-log lookup too."
+    }
+  ]
+}

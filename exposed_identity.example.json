@@ -1,0 +1,25 @@
+{
+  "full_name": "Jane Q. Public",
+  "emails": [
+    "jane@example.com",
+    "jane.public@gmail.com"
+  ],
+  "usernames": [
+    "janepublic",
+    "jqp_dev"
+  ],
+  "phones": [
+    "555-123-4567"
+  ],
+  "cities": [
+    "Springfield",
+    "Portland"
+  ],
+  "state": "OR",
+  "aliases": [
+    "Jane Doe"
+  ],
+  "relatives": [
+    "John Public"
+  ]
+}

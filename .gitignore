@@ -1,0 +1,22 @@
+# NEVER commit your real identity or scan output — these contain your PII
+exposed_identity.json
+*_report.json
+exposed_report.json
+.exposed_tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "exposed-osint"
+version = "0.1.0"
+description = "Find what of your personal data is leaking online — via free, no-account public sources — then get one-click opt-out links to remove it."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "GreenHarvestDev" }]
+keywords = ["osint", "privacy", "security", "data-broker", "opt-out", "self-scan", "footprint"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+]
+
+[project.optional-dependencies]
+full = ["sherlock-project>=0.15.0", "holehe>=1.61"]
+
+[project.scripts]
+exposed = "exposed.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/GreenHarvestDev/exposed"
+Issues = "https://github.com/GreenHarvestDev/exposed/issues"
+
+[tool.setuptools]
+packages = ["exposed"]
+
+[tool.setuptools.package-data]
+exposed = ["brokers.json"]

@@ -1,0 +1,4 @@
+# Core scan uses only the Python standard library — no required deps.
+# These enable the optional deeper account sweeps:
+sherlock-project>=0.15.0   # username -> which sites have an account under it
+holehe>=1.61               # email -> which sites have an account registered
