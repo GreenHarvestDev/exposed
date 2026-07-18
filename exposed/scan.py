@@ -16,6 +16,7 @@ Sources (all no-signup):
 Nothing is hardcoded — identity is read from a JSON file you control.
 """
 
+import contextlib
 import hashlib
 import json
 import re
@@ -74,34 +75,41 @@ def name_parts(identity):
 
 def fill_tokens(url, first, last, city, state, email, phone, full):
     slug = re.sub(r"\s+", "-", full.strip().lower()) if full else ""
-    return (url
-            .replace("{first}", urllib.parse.quote(first))
-            .replace("{last}", urllib.parse.quote(last))
-            .replace("{name}", urllib.parse.quote(full))
-            .replace("{name_slug}", urllib.parse.quote(slug))
-            .replace("{city}", urllib.parse.quote(city))
-            .replace("{state}", urllib.parse.quote(state))
-            .replace("{email}", urllib.parse.quote(email))
-            .replace("{phone}", urllib.parse.quote(phone)))
+    return (
+        url.replace("{first}", urllib.parse.quote(first))
+        .replace("{last}", urllib.parse.quote(last))
+        .replace("{name}", urllib.parse.quote(full))
+        .replace("{name_slug}", urllib.parse.quote(slug))
+        .replace("{city}", urllib.parse.quote(city))
+        .replace("{state}", urllib.parse.quote(state))
+        .replace("{email}", urllib.parse.quote(email))
+        .replace("{phone}", urllib.parse.quote(phone))
+    )
 
 
 # ── Individual checks ────────────────────────────────────────────────────────
+
 
 def check_gravatar(email, findings):
     h = hashlib.md5(email.strip().lower().encode()).hexdigest()
     status, _ = http_get(f"https://www.gravatar.com/avatar/{h}?d=404&s=80")
     if status != 200:
-        findings.append({
-            "source": "Gravatar", "severity": "clear",
-            "title": f"No public Gravatar for {email}",
-            "detail": "Your email isn't tied to a public Gravatar avatar/profile.",
-            "action": "", "url": ""})
+        findings.append(
+            {
+                "source": "Gravatar",
+                "severity": "clear",
+                "title": f"No public Gravatar for {email}",
+                "detail": "Your email isn't tied to a public Gravatar avatar/profile.",
+                "action": "",
+                "url": "",
+            }
+        )
         return
     pstatus, pbody = http_get(f"https://www.gravatar.com/{h}.json")
     detail = "A public Gravatar avatar is linked to this email (leaks a photo + confirms the address is real)."
     linked = []
     if pstatus == 200:
-        try:
+        with contextlib.suppress(Exception):
             prof = json.loads(pbody)["entry"][0]
             for a in prof.get("accounts", []):
                 if a.get("url"):
@@ -109,28 +117,37 @@ def check_gravatar(email, findings):
             dn = prof.get("displayName") or prof.get("name", {}).get("formatted")
             if dn:
                 detail += f" Public display name: {dn}."
-        except Exception:
-            pass
     if linked:
         detail += " Linked accounts exposed: " + ", ".join(linked[:8])
-    findings.append({
-        "source": "Gravatar", "severity": "medium" if linked else "low",
-        "title": f"Public Gravatar tied to {email}",
-        "detail": detail,
-        "action": "Edit or delete the profile at gravatar.com so it doesn't confirm the address or leak linked accounts.",
-        "url": "https://gravatar.com/profile"})
+    findings.append(
+        {
+            "source": "Gravatar",
+            "severity": "medium" if linked else "low",
+            "title": f"Public Gravatar tied to {email}",
+            "detail": detail,
+            "action": "Edit or delete the profile at gravatar.com so it doesn't confirm the address or leak linked accounts.",
+            "url": "https://gravatar.com/profile",
+        }
+    )
 
 
 def check_hudsonrock(email, findings):
-    url = ("https://cavalier.hudsonrock.com/api/json/v2/osint-tools/"
-           "search-by-email?email=" + urllib.parse.quote(email))
+    url = (
+        "https://cavalier.hudsonrock.com/api/json/v2/osint-tools/"
+        "search-by-email?email=" + urllib.parse.quote(email)
+    )
     status, body = http_get(url, timeout=20)
     if status != 200:
-        findings.append({
-            "source": "HudsonRock", "severity": "info",
-            "title": f"Stealer-log check unavailable for {email}",
-            "detail": f"Couldn't reach the free infostealer database (status {status}).",
-            "action": "Re-run the scan later.", "url": ""})
+        findings.append(
+            {
+                "source": "HudsonRock",
+                "severity": "info",
+                "title": f"Stealer-log check unavailable for {email}",
+                "detail": f"Couldn't reach the free infostealer database (status {status}).",
+                "action": "Re-run the scan later.",
+                "url": "",
+            }
+        )
         return
     try:
         data = json.loads(body)
@@ -138,68 +155,88 @@ def check_hudsonrock(email, findings):
         return
     stealers = data.get("stealers") or []
     if not stealers:
-        findings.append({
-            "source": "HudsonRock", "severity": "clear",
-            "title": f"{email} not seen in infostealer logs",
-            "detail": "This email did not appear in Hudson Rock's free stealer-malware dataset.",
-            "action": "", "url": ""})
+        findings.append(
+            {
+                "source": "HudsonRock",
+                "severity": "clear",
+                "title": f"{email} not seen in infostealer logs",
+                "detail": "This email did not appear in Hudson Rock's free stealer-malware dataset.",
+                "action": "",
+                "url": "",
+            }
+        )
         return
     n = len(stealers)
     domains = set()
     for s in stealers:
-        for c in (s.get("credentials") or []):
+        for c in s.get("credentials") or []:
             if c.get("url"):
                 domains.add(c["url"])
-    detail = ("A device tied to this email was infected by info-stealing malware; saved "
-              "logins were harvested. Exposed login domains include: "
-              + ", ".join(list(domains)[:10])) if domains else \
-             "A device tied to this email appears in stealer-malware logs."
-    findings.append({
-        "source": "HudsonRock", "severity": "high",
-        "title": f"{email} found in infostealer data ({n} infection record(s))",
-        "detail": detail,
-        "action": "Assume passwords typed on that device are compromised: rotate them, enable 2FA, and run a malware scan.",
-        "url": "https://www.hudsonrock.com/free-tools"})
+    detail = (
+        (
+            "A device tied to this email was infected by info-stealing malware; saved "
+            "logins were harvested. Exposed login domains include: " + ", ".join(list(domains)[:10])
+        )
+        if domains
+        else "A device tied to this email appears in stealer-malware logs."
+    )
+    findings.append(
+        {
+            "source": "HudsonRock",
+            "severity": "high",
+            "title": f"{email} found in infostealer data ({n} infection record(s))",
+            "detail": detail,
+            "action": "Assume passwords typed on that device are compromised: rotate them, enable 2FA, and run a malware scan.",
+            "url": "https://www.hudsonrock.com/free-tools",
+        }
+    )
 
 
 def check_github(email, findings):
     u_status, u_body = http_get(
         "https://api.github.com/search/users?q=" + urllib.parse.quote(f"{email} in:email"),
-        headers={"Accept": "application/vnd.github+json"})
+        headers={"Accept": "application/vnd.github+json"},
+    )
     users = []
     if u_status == 200:
-        try:
+        with contextlib.suppress(Exception):
             for it in json.loads(u_body).get("items", []):
                 users.append(it.get("login"))
-        except Exception:
-            pass
     c_status, c_body = http_get(
         "https://api.github.com/search/commits?q=" + urllib.parse.quote(f"author-email:{email}"),
-        headers={"Accept": "application/vnd.github.cloak-preview+json"})
+        headers={"Accept": "application/vnd.github.cloak-preview+json"},
+    )
     commit_ct = None
     if c_status == 200:
-        try:
+        with contextlib.suppress(Exception):
             commit_ct = json.loads(c_body).get("total_count", 0)
-        except Exception:
-            pass
     if users or commit_ct:
         parts = []
         if users:
             parts.append("GitHub account(s): " + ", ".join(filter(None, users[:5])))
         if commit_ct:
             parts.append(f"{commit_ct} public commit(s) publish this email in their metadata")
-        findings.append({
-            "source": "GitHub", "severity": "medium",
-            "title": f"{email} is exposed on GitHub",
-            "detail": ". ".join(parts) + ".",
-            "action": "Enable 'Keep my email private' in GitHub settings and set commit email to the noreply address; scrub old commit history if needed.",
-            "url": "https://github.com/settings/emails"})
+        findings.append(
+            {
+                "source": "GitHub",
+                "severity": "medium",
+                "title": f"{email} is exposed on GitHub",
+                "detail": ". ".join(parts) + ".",
+                "action": "Enable 'Keep my email private' in GitHub settings and set commit email to the noreply address; scrub old commit history if needed.",
+                "url": "https://github.com/settings/emails",
+            }
+        )
     else:
-        findings.append({
-            "source": "GitHub", "severity": "clear",
-            "title": f"{email} not found leaking on GitHub",
-            "detail": "No public GitHub user or commit metadata surfaced this email.",
-            "action": "", "url": ""})
+        findings.append(
+            {
+                "source": "GitHub",
+                "severity": "clear",
+                "title": f"{email} not found leaking on GitHub",
+                "detail": "No public GitHub user or commit metadata surfaced this email.",
+                "action": "",
+                "url": "",
+            }
+        )
 
 
 def check_sherlock(username, findings, tmp_dir):
@@ -208,24 +245,38 @@ def check_sherlock(username, findings, tmp_dir):
     tmp.mkdir(parents=True, exist_ok=True)
     out = tmp / f"{username}.txt"
     if out.exists():
-        try:
+        with contextlib.suppress(Exception):
             out.unlink()
-        except Exception:
-            pass
     if exe:
         cmd = [exe, username, "--timeout", "8", "--print-found", "--no-color", "--folder", str(tmp)]
     else:
-        cmd = [sys.executable, "-m", "sherlock_project", username, "--timeout", "8",
-               "--print-found", "--no-color", "--folder", str(tmp)]
+        cmd = [
+            sys.executable,
+            "-m",
+            "sherlock_project",
+            username,
+            "--timeout",
+            "8",
+            "--print-found",
+            "--no-color",
+            "--folder",
+            str(tmp),
+        ]
     try:
-        subprocess.run(cmd, capture_output=True, text=True, timeout=240,
-                       encoding="utf-8", errors="replace")
+        subprocess.run(
+            cmd, capture_output=True, text=True, timeout=240, encoding="utf-8", errors="replace"
+        )
     except Exception as e:
-        findings.append({
-            "source": "Sherlock", "severity": "info",
-            "title": f"Username sweep skipped for '{username}'",
-            "detail": f"Sherlock did not run ({e}).",
-            "action": "Ensure sherlock is installed (pip install sherlock-project).", "url": ""})
+        findings.append(
+            {
+                "source": "Sherlock",
+                "severity": "info",
+                "title": f"Username sweep skipped for '{username}'",
+                "detail": f"Sherlock did not run ({e}).",
+                "action": "Ensure sherlock is installed (pip install sherlock-project).",
+                "url": "",
+            }
+        )
         return
     sites = []
     if out.exists():
@@ -234,62 +285,94 @@ def check_sherlock(username, findings, tmp_dir):
             if line.startswith("http"):
                 sites.append(line)
     if sites:
-        findings.append({
-            "source": "Sherlock", "severity": "medium",
-            "title": f"'{username}' found on {len(sites)} site(s)",
-            "detail": "Accounts under this username reveal your interests, activity, and often real name/photo: "
-                      + ", ".join(sites[:25]) + ("…" if len(sites) > 25 else ""),
-            "action": "Review each: delete unused accounts, lock down profiles, and stop reusing this handle for anything sensitive.",
-            "url": "", "sites": sites})
+        findings.append(
+            {
+                "source": "Sherlock",
+                "severity": "medium",
+                "title": f"'{username}' found on {len(sites)} site(s)",
+                "detail": "Accounts under this username reveal your interests, activity, and often real name/photo: "
+                + ", ".join(sites[:25])
+                + ("…" if len(sites) > 25 else ""),
+                "action": "Review each: delete unused accounts, lock down profiles, and stop reusing this handle for anything sensitive.",
+                "url": "",
+                "sites": sites,
+            }
+        )
     else:
-        findings.append({
-            "source": "Sherlock", "severity": "clear",
-            "title": f"No accounts surfaced for '{username}'",
-            "detail": "Sherlock found no public accounts under this exact username.",
-            "action": "", "url": ""})
+        findings.append(
+            {
+                "source": "Sherlock",
+                "severity": "clear",
+                "title": f"No accounts surfaced for '{username}'",
+                "detail": "Sherlock found no public accounts under this exact username.",
+                "action": "",
+                "url": "",
+            }
+        )
 
 
 def check_holehe(email, findings):
     """holehe: which sites have an account registered to this email (no login needed)."""
     exe = shutil.which("holehe")
-    cmd = ([exe] if exe else [sys.executable, "-m", "holehe.core"]) + \
-          ["--only-used", "--no-color", email]
+    cmd = ([exe] if exe else [sys.executable, "-m", "holehe.core"]) + [
+        "--only-used",
+        "--no-color",
+        email,
+    ]
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=150,
-                           encoding="utf-8", errors="replace")
+        r = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=150, encoding="utf-8", errors="replace"
+        )
         out = (r.stdout or "") + (r.stderr or "")
     except Exception as e:
-        findings.append({
-            "source": "holehe", "severity": "info",
-            "title": f"Account-registration sweep skipped for {email}",
-            "detail": f"holehe did not run ({e}).",
-            "action": "pip install holehe", "url": ""})
+        findings.append(
+            {
+                "source": "holehe",
+                "severity": "info",
+                "title": f"Account-registration sweep skipped for {email}",
+                "detail": f"holehe did not run ({e}).",
+                "action": "pip install holehe",
+                "url": "",
+            }
+        )
         return
     sites = []
     for line in out.splitlines():
         s = line.strip()
         if s.startswith("[+]"):
             sites.append(s[3:].strip())
-    sites = sorted(set(s for s in sites if s))
+    sites = sorted({s for s in sites if s})
     if sites:
-        findings.append({
-            "source": "holehe", "severity": "medium",
-            "title": f"{email} is registered on {len(sites)} site(s)",
-            "detail": "These sites confirm an account exists for this email (each one stores your data): "
-                      + ", ".join(sites),
-            "action": "Delete accounts you don't use; for the rest, remove your address/phone from the profile and turn on 2FA.",
-            "url": "", "sites": sites})
+        findings.append(
+            {
+                "source": "holehe",
+                "severity": "medium",
+                "title": f"{email} is registered on {len(sites)} site(s)",
+                "detail": "These sites confirm an account exists for this email (each one stores your data): "
+                + ", ".join(sites),
+                "action": "Delete accounts you don't use; for the rest, remove your address/phone from the profile and turn on 2FA.",
+                "url": "",
+                "sites": sites,
+            }
+        )
     else:
-        findings.append({
-            "source": "holehe", "severity": "clear",
-            "title": f"No account registrations surfaced for {email}",
-            "detail": "holehe found no sites confirming an account for this email.",
-            "action": "", "url": ""})
+        findings.append(
+            {
+                "source": "holehe",
+                "severity": "clear",
+                "title": f"No account registrations surfaced for {email}",
+                "detail": "holehe found no sites confirming an account for this email.",
+                "action": "",
+                "url": "",
+            }
+        )
 
 
 def check_hudson_username(username, findings):
-    url = ("https://cavalier.hudsonrock.com/api/json/v2/osint-tools/"
-           "search-by-username?username=" + urllib.parse.quote(username))
+    url = (
+        "https://cavalier.hudsonrock.com/api/json/v2/osint-tools/"
+        "search-by-username?username=" + urllib.parse.quote(username)
+    )
     status, body = http_get(url, timeout=20)
     if status != 200:
         return
@@ -298,15 +381,20 @@ def check_hudson_username(username, findings):
     except Exception:
         return
     if stealers:
-        findings.append({
-            "source": "HudsonRock", "severity": "high",
-            "title": f"Username '{username}' found in infostealer logs ({len(stealers)} record(s))",
-            "detail": "This handle appears in stealer-malware logs, meaning a device that used it was infected and its saved logins were harvested.",
-            "action": "Rotate every password tied to this handle, enable 2FA, and run a malware scan on your devices.",
-            "url": "https://www.hudsonrock.com/free-tools"})
+        findings.append(
+            {
+                "source": "HudsonRock",
+                "severity": "high",
+                "title": f"Username '{username}' found in infostealer logs ({len(stealers)} record(s))",
+                "detail": "This handle appears in stealer-malware logs, meaning a device that used it was infected and its saved logins were harvested.",
+                "action": "Rotate every password tied to this handle, enable 2FA, and run a malware scan on your devices.",
+                "url": "https://www.hudsonrock.com/free-tools",
+            }
+        )
 
 
 # ── Dork + broker link builders ──────────────────────────────────────────────
+
 
 def get_cities(identity):
     c = identity.get("cities")
@@ -322,12 +410,22 @@ def build_dorks(identity, first, last, full):
     state = identity.get("state", "")
 
     def g(q, label):
-        dorks.append({"engine": "Google", "label": label,
-                      "url": "https://www.google.com/search?q=" + urllib.parse.quote(q)})
+        dorks.append(
+            {
+                "engine": "Google",
+                "label": label,
+                "url": "https://www.google.com/search?q=" + urllib.parse.quote(q),
+            }
+        )
 
     def d(q, label):
-        dorks.append({"engine": "DuckDuckGo", "label": label,
-                      "url": "https://duckduckgo.com/?q=" + urllib.parse.quote(q)})
+        dorks.append(
+            {
+                "engine": "DuckDuckGo",
+                "label": label,
+                "url": "https://duckduckgo.com/?q=" + urllib.parse.quote(q),
+            }
+        )
 
     if full:
         g(f'"{full}"', "Exact name")
@@ -364,8 +462,12 @@ def build_brokers(identity, first, last, full):
     out = []
     for b in brokers:
         b = dict(b)
-        b["search_url"] = fill_tokens(b.get("search_url", ""), first, last, city, state, email, phone, full)
-        b["optout_url"] = fill_tokens(b.get("optout_url", ""), first, last, city, state, email, phone, full)
+        b["search_url"] = fill_tokens(
+            b.get("search_url", ""), first, last, city, state, email, phone, full
+        )
+        b["optout_url"] = fill_tokens(
+            b.get("optout_url", ""), first, last, city, state, email, phone, full
+        )
         out.append(b)
     return out
 
@@ -378,6 +480,7 @@ def run_scan(identity, *, do_sherlock=True, tmp_dir=None, progress=None):
     tmp_dir   : working dir for Sherlock output (default: ./.exposed_tmp).
     progress  : optional callable(str) for status messages.
     """
+
     def say(msg):
         if progress:
             progress(msg)
@@ -389,12 +492,17 @@ def run_scan(identity, *, do_sherlock=True, tmp_dir=None, progress=None):
 
     findings = []
     for email in emails:
-        say(f"Gravatar    {email}");   check_gravatar(email, findings)
-        say(f"HudsonRock  {email}");   check_hudsonrock(email, findings)
-        say(f"GitHub      {email}");   check_github(email, findings)
-        say(f"holehe      {email}");   check_holehe(email, findings)
+        say(f"Gravatar    {email}")
+        check_gravatar(email, findings)
+        say(f"HudsonRock  {email}")
+        check_hudsonrock(email, findings)
+        say(f"GitHub      {email}")
+        check_github(email, findings)
+        say(f"holehe      {email}")
+        check_holehe(email, findings)
     for u in usernames:
-        say(f"HudsonRock  @{u}");      check_hudson_username(u, findings)
+        say(f"HudsonRock  @{u}")
+        check_hudson_username(u, findings)
     if do_sherlock:
         for u in usernames:
             say(f"Sherlock    @{u} (up to ~4 min)")
@@ -415,7 +523,9 @@ def run_scan(identity, *, do_sherlock=True, tmp_dir=None, progress=None):
             "name": full or "(not set)",
             "emails": emails,
             "usernames": usernames,
-            "location": (", ".join(get_cities(identity)) + f", {identity.get('state', '')}").strip(", "),
+            "location": (", ".join(get_cities(identity)) + f", {identity.get('state', '')}").strip(
+                ", "
+            ),
             "configured": bool(full and emails),
         },
         "stats": stats,

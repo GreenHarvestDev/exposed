@@ -1,5 +1,10 @@
 # exposed
 
+[![CI](https://github.com/GreenHarvestDev/exposed/actions/workflows/ci.yml/badge.svg)](https://github.com/GreenHarvestDev/exposed/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/exposed.svg)](https://pypi.org/project/exposed/)
+[![Python](https://img.shields.io/pypi/pyversions/exposed.svg)](https://pypi.org/project/exposed/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 **Find what of your personal data is leaking online — then remove it.**
 
 `exposed` is a personal OSINT self-scan. Point it at your own name, emails, and
@@ -31,10 +36,16 @@ machine except the lookups themselves.
 ## Install
 
 ```bash
+pip install exposed              # core scan
+pip install "exposed[full]"      # + holehe & Sherlock for the deeper account sweeps
+```
+
+Or from source:
+
+```bash
 git clone https://github.com/GreenHarvestDev/exposed.git
 cd exposed
-pip install -e .          # core scan (standard library only)
-pip install -e ".[full]"  # + holehe & Sherlock for the deeper account sweeps
+pip install -e ".[full]"
 ```
 
 ## Usage
@@ -84,6 +95,19 @@ brokers. Don't use it to profile other people.
 All sources are public and free; the tool sends no data to any server it doesn't
 have to query for a lookup, and stores results only in the local report file you
 control.
+
+## Development
+
+```bash
+git clone https://github.com/GreenHarvestDev/exposed.git
+cd exposed
+pip install -e ".[dev]"
+ruff check . && ruff format --check . && pytest
+```
+
+Tests are fully offline (network and external tools are mocked), so `pytest` runs in
+well under a second. See [CONTRIBUTING.md](CONTRIBUTING.md) — new source checks are
+welcome as long as they're free, need no account, and ship with a test.
 
 ## License
 

@@ -34,23 +34,36 @@ def main(argv=None):
     ap = argparse.ArgumentParser(
         prog="exposed",
         description="Scan free public sources for your exposed personal data, "
-                    "then get opt-out links to remove it.")
-    ap.add_argument("--identity", "-i", default="exposed_identity.json",
-                    help="Path to your identity JSON (default: ./exposed_identity.json)")
-    ap.add_argument("--out", "-o", default="exposed_report.json",
-                    help="Where to write the full JSON report (default: ./exposed_report.json)")
-    ap.add_argument("--no-sherlock", action="store_true",
-                    help="Skip the slow username sweep")
-    ap.add_argument("--json", action="store_true",
-                    help="Print the full report JSON to stdout instead of the readable summary")
+        "then get opt-out links to remove it.",
+    )
+    ap.add_argument(
+        "--identity",
+        "-i",
+        default="exposed_identity.json",
+        help="Path to your identity JSON (default: ./exposed_identity.json)",
+    )
+    ap.add_argument(
+        "--out",
+        "-o",
+        default="exposed_report.json",
+        help="Where to write the full JSON report (default: ./exposed_report.json)",
+    )
+    ap.add_argument("--no-sherlock", action="store_true", help="Skip the slow username sweep")
+    ap.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full report JSON to stdout instead of the readable summary",
+    )
     ap.add_argument("--no-color", action="store_true", help="Disable colored output")
     args = ap.parse_args(argv)
 
     identity_path = Path(args.identity)
     if not identity_path.exists():
         print(f"error: identity file not found: {identity_path}", file=sys.stderr)
-        print("Copy exposed_identity.example.json to exposed_identity.json and fill it in.",
-              file=sys.stderr)
+        print(
+            "Copy exposed_identity.example.json to exposed_identity.json and fill it in.",
+            file=sys.stderr,
+        )
         return 2
     identity = load_json(identity_path, None)
     if not identity:
@@ -71,7 +84,9 @@ def main(argv=None):
 
     try:
         from rich.console import Console
+
         from .render import render
+
         console = Console(no_color=args.no_color)
         render(result, console)
     except ImportError:

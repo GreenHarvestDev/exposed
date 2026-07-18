@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "exposed-osint"
+name = "exposed"
 version = "0.1.0"
 description = "Find what of your personal data is leaking online — via free, no-account public sources — then get one-click opt-out links to remove it."
 readme = "README.md"
@@ -12,27 +12,50 @@ license = { text = "MIT" }
 authors = [{ name = "GreenHarvestDev" }]
 keywords = ["osint", "privacy", "security", "data-broker", "opt-out", "self-scan", "footprint"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Security",
+    "Topic :: Internet",
+    "Typing :: Typed",
 ]
 dependencies = ["rich>=13.0"]
 
 [project.optional-dependencies]
 full = ["sherlock-project>=0.15.0", "holehe>=1.61"]
+dev = ["pytest>=7.0", "ruff>=0.5"]
 
 [project.scripts]
 exposed = "exposed.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/GreenHarvestDev/exposed"
+Repository = "https://github.com/GreenHarvestDev/exposed"
 Issues = "https://github.com/GreenHarvestDev/exposed/issues"
+Changelog = "https://github.com/GreenHarvestDev/exposed/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = ["exposed"]
 
 [tool.setuptools.package-data]
 exposed = ["brokers.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]  # line length is handled by the formatter, not enforced hard

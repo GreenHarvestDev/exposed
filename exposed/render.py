@@ -9,11 +9,11 @@ from rich.text import Text
 
 # severity -> (label, badge style, accent style, icon)
 SEV = {
-    "high":   ("HIGH",   "bold white on red3",      "red3",    "●"),
-    "medium": ("MEDIUM", "bold black on gold1",     "gold1",   "●"),
-    "low":    ("LOW",    "bold black on deep_sky_blue1", "deep_sky_blue1", "●"),
-    "info":   ("INFO",   "bold black on grey62",    "grey62",  "○"),
-    "clear":  ("CLEAR",  "bold black on green3",    "green3",  "✓"),
+    "high": ("HIGH", "bold white on red3", "red3", "●"),
+    "medium": ("MEDIUM", "bold black on gold1", "gold1", "●"),
+    "low": ("LOW", "bold black on deep_sky_blue1", "deep_sky_blue1", "●"),
+    "info": ("INFO", "bold black on grey62", "grey62", "○"),
+    "clear": ("CLEAR", "bold black on green3", "green3", "✓"),
 }
 SEV_ORDER = ["high", "medium", "low", "info", "clear"]
 
@@ -107,11 +107,13 @@ def render(result, console: Console):
     footer.add_column(justify="left", style="grey70")
     footer.add_row(f"{len(result['brokers'])}", "data-broker opt-out links ready")
     footer.add_row(f"{len(result['dorks'])}", "search dorks generated")
-    console.print(Panel(
-        footer,
-        title=Text(" next: remove yourself ", style="bold black on green3"),
-        title_align="left",
-        border_style="green3",
-        box=ROUNDED,
-        padding=(1, 2),
-    ))
+    console.print(
+        Panel(
+            footer,
+            title=Text(" next: remove yourself ", style="bold black on green3"),
+            title_align="left",
+            border_style="green3",
+            box=ROUNDED,
+            padding=(1, 2),
+        )
+    )
