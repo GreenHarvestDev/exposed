@@ -160,6 +160,39 @@ def test_check_github_clear(monkeypatch):
     assert findings[0]["severity"] == "clear"
 
 
+def test_check_github_rate_limited_is_info_not_clear(monkeypatch):
+    # both calls throttled (403) -> must NOT report a false "clear"
+    _patch_http(monkeypatch, lambda url: (403, "rate limited"))
+    findings = []
+    scan.check_github("j@x.com", findings)
+    assert findings[0]["severity"] == "info"
+    assert "clear" not in findings[0]["severity"]
+
+
+def test_check_gravatar_unreachable_is_info_not_clear(monkeypatch):
+    # network error (status 0) -> info, never "clear"
+    _patch_http(monkeypatch, lambda url: (0, "[error]"))
+    findings = []
+    scan.check_gravatar("j@x.com", findings)
+    assert findings[0]["severity"] == "info"
+
+
+def test_check_hudsonrock_unreachable_is_info(monkeypatch):
+    _patch_http(monkeypatch, lambda url: (503, ""))
+    findings = []
+    scan.check_hudsonrock("j@x.com", findings)
+    assert findings[0]["severity"] == "info"
+
+
+def test_http_failed_classification():
+    assert scan.http_failed(0) is True
+    assert scan.http_failed(403) is True
+    assert scan.http_failed(429) is True
+    assert scan.http_failed(500) is True
+    assert scan.http_failed(404) is False  # 404 means "no record", not a failure
+    assert scan.http_failed(200) is False
+
+
 def _fake_run_factory(stdout="", returncode=0):
     def fake_run(cmd, **kwargs):
         return types.SimpleNamespace(stdout=stdout, stderr="", returncode=returncode)
@@ -180,6 +213,21 @@ def test_check_holehe_found(monkeypatch):
     assert "twitter.com" in findings[0]["detail"]
     assert "spotify.com" in findings[0]["detail"]
     assert "nope.com" not in findings[0]["detail"]
+
+
+def test_check_holehe_ignores_legend_lines(monkeypatch):
+    # holehe prints a legend "[+] Email used" that must NOT be counted as a site
+    monkeypatch.setattr(scan.shutil, "which", lambda name: None)
+    monkeypatch.setattr(
+        scan.subprocess,
+        "run",
+        _fake_run_factory("[+] Email used\n[+] twitter.com\n[+] any.do\n"),
+    )
+    findings = []
+    scan.check_holehe("j@x.com", findings)
+    assert findings[0]["severity"] == "medium"
+    assert findings[0]["sites"] == ["any.do", "twitter.com"]
+    assert "Email used" not in findings[0]["sites"]
 
 
 def test_check_holehe_clear(monkeypatch):

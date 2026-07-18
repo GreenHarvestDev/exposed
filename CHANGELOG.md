@@ -6,6 +6,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- A failed source check (network error, rate limiting, or a missing tool) is now
+  reported as `info` — never as a false `clear`. Previously, e.g. a rate-limited
+  GitHub search could wrongly report your email as private.
+- holehe results no longer count its output legend (`[+] Email used`) as a fake
+  registered site.
+
+### Added
+- Full type hints + `py.typed`; the package is now type-checked with mypy in CI.
+- Tests for the CLI, the renderer, and every check's failure path (32 tests total).
+
 ## [0.1.0] — 2026-07-18
 
 ### Added
